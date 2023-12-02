@@ -1,0 +1,107 @@
+use ast;
+
+grammar;
+
+use std::str::Fromstr;
+
+match {
+  // 跳过空白符和注释
+    r"\s*" => {},
+    r"//[^\n\r]*[\n\r]*" => {},
+  // 剩下的情况采用默认方式处理
+    _
+}
+
+Program: Program = {
+    "main" "(" ")" Block => Program{main:<>}
+};
+
+Block: BlockStatement = {
+    "{" Statements "}" => BlockStatement{statements:<>}
+};
+
+Statements: Vec<Statement> = {
+    => Vec::new()
+    <statement:Statement> ";" <statements:Statements> => {
+        let mut stmts = vec![statement];
+        stmts.extend(statements.into_iter());
+        stmts
+    },
+};
+
+Statement: Statement = {
+    Assignment => Statement::Assignment(<>),
+    Conditional => Statement::Conditional(<>),
+    Loop => Statement::LoopStatement(<>),
+};
+
+Assignment: AssignmentStatement = {
+    <i:ID> "==" <expr:Expr> => AssignmentStatement {id:i.to_string(),expression:expr},
+};
+
+Conditional: ConditionalStatement = {
+    "if" "(" <expr:Expr> ")" <block:Block> => ConditionalStatement {conditional:expr,block:block},
+};
+
+Loop: LoopStatement = {
+    "while" "(" <expr:Expr> ")" <b:Block> => LoopStatement{conditional:expr,blcok:b},
+};
+
+Expr: Expression = {
+    Term => Expression::Term(<>),
+    <e:Expr> "+" <t:Term> => Expression::AOSP(AddandSubOp{
+        left:Box::new(e),
+        opcode:Opcode::Add,
+        right:Box::new(t),
+    }),
+    <e:Expr> "-" <t:Term> => Expression::AOSP(AddandSubOp{
+        left:Box::new(e),
+        opcode:Opcode::Sub,
+        right:Box::new(t),
+    }),
+    <e:Expr> "<" <t:Term> => Expression::BinaryExpr(BinaryExperssion{
+        left:Box::new(e),
+        operator:RelationOperator::LessThan,
+        rigth:Box::new(t),
+    }),
+    <e:Expr> "<=" <t:Term> => Expression::BinaryExpr(BinaryExperssion{
+        left:Box::new(e),
+        operator:RelationOperator::LessEqual,
+        rigth:Box::new(t),
+    }),
+    <e:Expr> ">" <t:Term> => Expression::BinaryExpr(BinaryExperssion{
+        left:Box::new(e),
+        operator:RelationOperator::GreaterThan,
+        rigth:Box::new(t),
+    }),
+    <e:Expr> ">=" <t:Term> => Expression::BinaryExpr(BinaryExperssion{
+        left:Box::new(e),
+        operator:RelationOperator::GreaterEqual,
+        rigth:Box::new(t),
+    }),
+    <e:Expr> "==" <t:Term> => Expression::BinaryExpr(BinaryExperssion{
+        left:Box::new(e),
+        operator:RelationOperator::Equal,
+        rigth:Box::new(t),
+    }),
+    <e:Expr> "!=" <t:Term> => Expression::BinaryExpr(BinaryExperssion{
+        left:Box::new(e),
+        operator:RelationOperator::NotEqual,
+        rigth:Box::new(t),
+    }),
+};
+
+Term: Term = {
+    Factor => Term::Factor(<>),
+    <t:Term> "*" <f:Factor> => Term::Multiply(Box::new(t),Box::new(f)),
+    <t:Term> "/" <f:Factor> => Term::Divide(Box::new(t),Box::new(f)),
+};
+
+Factor: Factor = {
+    ID => Factor::Identifier(<>.to_string()),
+    NUM => Factor::Number(i64::from_str(<>).unwrap()),
+    "(" Expr ")" => Factor::Expr(Box::new(<>)),
+};
+
+ID: String = r"[a-zA-Z_][a-zA-Z0-9_]*";
+NUM: String = r"[0-9]+";
