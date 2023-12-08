@@ -5,7 +5,17 @@ use lalrpop_util::lalrpop_mod;
 lalrpop_mod!(pub grammer);
 
 fn main() {
-    let source_code = "main() { a = 1; }";
+    let source_code = "main() {
+        x = 5;
+        y = x * 2;
+        if (x < y) {
+            x = x + 1;
+        };
+        while (x < 10) {
+            x = x + 1;
+        };
+    }
+    ";
 
     match grammer::ProgramParser::new().parse(source_code) {
         Ok(ast) => {
