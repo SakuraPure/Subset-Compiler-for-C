@@ -1,8 +1,8 @@
-use ast;
+use crate::ast::*;
 
 grammar;
 
-use std::str::Fromstr;
+use std::str::FromStr;
 
 match {
   // 跳过空白符和注释
@@ -12,7 +12,7 @@ match {
     _
 }
 
-Program: Program = {
+pub Program: Program = {
     "main" "(" ")" Block => Program{main:<>}
 };
 
@@ -21,7 +21,7 @@ Block: BlockStatement = {
 };
 
 Statements: Vec<Statement> = {
-    => Vec::new()
+    => Vec::new(),
     <statement:Statement> ";" <statements:Statements> => {
         let mut stmts = vec![statement];
         stmts.extend(statements.into_iter());
@@ -40,54 +40,54 @@ Assignment: AssignmentStatement = {
 };
 
 Conditional: ConditionalStatement = {
-    "if" "(" <expr:Expr> ")" <block:Block> => ConditionalStatement {conditional:expr,block:block},
+    "if" "(" <expr:Expr> ")" <block:Block> => ConditionalStatement {condition:expr,block:block},
 };
 
 Loop: LoopStatement = {
-    "while" "(" <expr:Expr> ")" <b:Block> => LoopStatement{conditional:expr,blcok:b},
+    "while" "(" <expr:Expr> ")" <b:Block> => LoopStatement{condition:expr,block:b},
 };
 
 Expr: Expression = {
     Term => Expression::Term(<>),
-    <e:Expr> "+" <t:Term> => Expression::AOSP(AddandSubOp{
+    <e:Expr> "+" <t:Term> => Expression::ASOP(AddandSubOp{
         left:Box::new(e),
         opcode:Opcode::Add,
         right:Box::new(t),
     }),
-    <e:Expr> "-" <t:Term> => Expression::AOSP(AddandSubOp{
+    <e:Expr> "-" <t:Term> => Expression::ASOP(AddandSubOp{
         left:Box::new(e),
         opcode:Opcode::Sub,
         right:Box::new(t),
     }),
-    <e:Expr> "<" <t:Term> => Expression::BinaryExpr(BinaryExperssion{
+    <e:Expr> "<" <t:Expr> => Expression::BinaryExpr(BinaryExpression{
         left:Box::new(e),
-        operator:RelationOperator::LessThan,
-        rigth:Box::new(t),
+        operator:RelationalOperator::LessThan,
+        right:Box::new(t),
     }),
-    <e:Expr> "<=" <t:Term> => Expression::BinaryExpr(BinaryExperssion{
+    <e:Expr> "<=" <t:Expr> => Expression::BinaryExpr(BinaryExpression{
         left:Box::new(e),
-        operator:RelationOperator::LessEqual,
-        rigth:Box::new(t),
+        operator:RelationalOperator::LessEqual,
+        right:Box::new(t),
     }),
-    <e:Expr> ">" <t:Term> => Expression::BinaryExpr(BinaryExperssion{
+    <e:Expr> ">" <t:Expr> => Expression::BinaryExpr(BinaryExpression{
         left:Box::new(e),
-        operator:RelationOperator::GreaterThan,
-        rigth:Box::new(t),
+        operator:RelationalOperator::GreaterThan,
+        right:Box::new(t),
     }),
-    <e:Expr> ">=" <t:Term> => Expression::BinaryExpr(BinaryExperssion{
+    <e:Expr> ">=" <t:Expr> => Expression::BinaryExpr(BinaryExpression{
         left:Box::new(e),
-        operator:RelationOperator::GreaterEqual,
-        rigth:Box::new(t),
+        operator:RelationalOperator::GreaterEqual,
+        right:Box::new(t),
     }),
-    <e:Expr> "==" <t:Term> => Expression::BinaryExpr(BinaryExperssion{
+    <e:Expr> "==" <t:Expr> => Expression::BinaryExpr(BinaryExpression{
         left:Box::new(e),
-        operator:RelationOperator::Equal,
-        rigth:Box::new(t),
+        operator:RelationalOperator::Equal,
+        right:Box::new(t),
     }),
-    <e:Expr> "!=" <t:Term> => Expression::BinaryExpr(BinaryExperssion{
+    <e:Expr> "!=" <t:Expr> => Expression::BinaryExpr(BinaryExpression{
         left:Box::new(e),
-        operator:RelationOperator::NotEqual,
-        rigth:Box::new(t),
+        operator:RelationalOperator::NotEqual,
+        right:Box::new(t),
     }),
 };
 

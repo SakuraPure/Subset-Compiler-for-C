@@ -60,7 +60,7 @@ pub struct BinaryExpression {
 pub struct AddandSubOp {
     pub left: Box<Expression>,
     pub opcode:Opcode,
-    pub right:Box<Expression>,
+    pub right:Box<Term>,
 }
 
 pub enum RelationalOperator {
