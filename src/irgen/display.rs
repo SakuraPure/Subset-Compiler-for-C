@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter};
 use crate::irgen::gen::IRGenerator;
 use crate::irgen::visitor::Quadruple;
+use crate::irgen::visitor::Rst::{Label, Value};
 
 impl Display for Quadruple {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -12,12 +13,20 @@ impl Display for Quadruple {
             Some(arg) => arg,
             None => "",
         };
-        write!(f, "{} {} {} {}", self.op, arg1, arg2, self.result)
+        let result = match &self.result {
+            Value(val) => val.clone(),
+            Label(ptr) => ptr.borrow().clone(),
+        };
+        write!(f, "{:4} {:4} {:4} {:4}", self.op, arg1, arg2, result)
     }
 }
 
 impl Display for IRGenerator {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        let mut quadruples = String::new();
+        for (index, quad) in self.quadruples.iter().enumerate() {
+            quadruples = format!("{}\n{:04} ({})", quadruples, index, quad);
+        }
+        write!(f, "{}", quadruples)
     }
 }

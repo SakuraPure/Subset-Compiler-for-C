@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+use std::rc::Rc;
 use crate::ast::*;
 
 pub trait Visitor {
@@ -19,11 +21,17 @@ pub struct Quadruple {
     pub op: String,
     pub arg1: Option<String>,
     pub arg2: Option<String>,
-    pub result: String,
+    pub result: Rst,
+}
+
+#[derive(Debug)]
+pub enum Rst {
+    Value(String),
+    Label(Rc<RefCell<String>>),
 }
 
 impl Quadruple {
-    pub fn new(op: String, arg1: Option<String>, arg2: Option<String>, result: String) -> Self {
+    pub fn new(op: String, arg1: Option<String>, arg2: Option<String>, result: Rst) -> Self {
         Quadruple {
             op,
             arg1,

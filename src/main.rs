@@ -45,9 +45,7 @@ fn main() {
 
                 ir_generator.visit_program(&ast);
 
-                let ir_code = ir_generator.quadruples.iter().fold(String::new(), |acc, quad| {
-                    format!("{}\n{}", acc, quad)
-                });
+                let ir_code = ir_generator.to_string();
 
                 let output_file = cli
                     .output
