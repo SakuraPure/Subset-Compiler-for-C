@@ -17,18 +17,18 @@ impl IRGenerator {
 }
 
 impl Visitor for IRGenerator {
-    fn visit_program(&mut self, program: &crate::ast::Program) {
+    fn visit_program(&mut self, program: &Program) {
         self.visit_block_statement(&program.main);
     }
 
-    fn visit_block_statement(&mut self, block: &crate::ast::BlockStatement) {
+    fn visit_block_statement(&mut self, block: &BlockStatement) {
         block
             .statements
             .iter()
             .for_each(|statement| self.visit_statement(statement));
     }
 
-    fn visit_statement(&mut self, statement: &crate::ast::Statement) {
+    fn visit_statement(&mut self, statement: &Statement) {
         match statement {
             Statement::Assignment(assignment) => self.visit_assignment_statement(assignment),
             Statement::Conditional(conditional) => self.visit_conditional_statement(conditional),
@@ -36,7 +36,7 @@ impl Visitor for IRGenerator {
         }
     }
 
-    fn visit_expression(&mut self, expression: &crate::ast::Expression) -> String {
+    fn visit_expression(&mut self, expression: &Expression) -> String {
         match expression {
             Expression::BinaryExpr(binary_expr) => self.visit_add_and_sub_op(binary_expr),
             Expression::Term(term) => self.visit_term(term),
@@ -44,7 +44,7 @@ impl Visitor for IRGenerator {
         }
     }
 
-    fn visit_factor(&mut self, factor: &crate::ast::Factor) -> String {
+    fn visit_factor(&mut self, factor: &Factor) -> String {
         match factor {
             crate::ast::Factor::Identifier(id) => {
                 // 直接返回标识符名称
@@ -61,10 +61,10 @@ impl Visitor for IRGenerator {
         }
     }
 
-    fn visit_add_and_sub_op(&mut self, op: &crate::ast::AddandSubOp) -> String {
+    fn visit_add_and_sub_op(&mut self, op: &AddandSubOp) -> String {
         let left = self.visit_expression(&op.left);
         let right = self.visit_term(&op.right);
-        let result = format!("temp{}", self.quadruples.len());
+        let result = format!("${}", self.quadruples.len());
 
         let opcode = match op.opcode {
             Opcode::Add => "add",
@@ -91,7 +91,7 @@ impl Visitor for IRGenerator {
             crate::ast::Term::Multiply(left_term, right_factor) => {
                 let left = self.visit_term(left_term);
                 let right = self.visit_factor(right_factor);
-                let result = format!("temp{}", self.quadruples.len());
+                let result = format!("${}", self.quadruples.len());
                 self.quadruples.push(Quadruple::new(
                     "mul".to_string(),
                     Some(left),
@@ -103,7 +103,7 @@ impl Visitor for IRGenerator {
             crate::ast::Term::Divide(left_term, right_factor) => {
                 let left = self.visit_term(left_term);
                 let right = self.visit_factor(right_factor);
-                let result = format!("temp{}", self.quadruples.len());
+                let result = format!("${}", self.quadruples.len());
                 self.quadruples.push(Quadruple::new(
                     "div".to_string(),
                     Some(left),
