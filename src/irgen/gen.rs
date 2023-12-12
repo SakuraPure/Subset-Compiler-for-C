@@ -145,7 +145,24 @@ impl Visitor for IRGenerator {
     }
 
     fn visit_loop_statement(&mut self, loop_stmt: &LoopStatement) {
-        todo!()
+        let entry = format!("@{}", self.quadruples.len());
+
+        self.visit_condition(&loop_stmt.condition);
+        self.visit_block_statement(&loop_stmt.block);
+
+        let ret = Rc::new(RefCell::new(entry));
+
+        self.quadruples.push(Quadruple::new(
+            "jmp".to_string(),
+            None,
+            None,
+            Label(ret.to_owned()),
+        ));
+
+        *self.ptr_vec[self.label_count - 1].borrow_mut() = format!("@{}", self.quadruples.len());
+
+        self.label_count -= 2;
+        (0..2).for_each(|_| { self.ptr_vec.pop(); });
     }
 
     fn visit_condition(&mut self, condition: &Condition) {
